@@ -37,10 +37,12 @@ or
 
 	_http._tcp IN TXT "https://www.our-web-site.com/"
 
-If these were set on the domain `example.com`, then the following web forewarding would work
+If these UWF records were set on the domain `example.com`, then the following web forwarding would work
 
 	http://example.com/ -> https://www.our-web-site.com/
-	http://twt.exmaple.com/ -> https://twitter.com/JohnDeo
+	http://twt.exmaple.com/ -> https://twitter.com/JohnDeoTheThird
+
+So, when any usser click the URL `exmaple.com` they will be sent to `https://www.our-web-site.com/`.
 
 If you only want to use UWF for certain names, you can chooses to point only those names to the UWF node(s).
 
@@ -48,7 +50,7 @@ For exmaple
 
 	twt IN A 10.11.12.13
 
-With only this address record, instead of the pair above, UWF would only be active on the name `twt`.
+With only this address record, instead of the address pair above, UWF would only be active on the name `twt`.
 
 For fail-over / load-balancing, you can point to multiple UWF nodes by specifying multiple IP Addresses
 
