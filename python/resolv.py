@@ -8,7 +8,6 @@ import socket
 import select
 import argparse
 import os
-import json
 import dns
 import dns.name
 import dns.message
@@ -28,18 +27,16 @@ DNS_FLAGS = {
     "RA": 0x80
 }
 
-dohServers = ["8.8.8.8", "8.8.4.4"]
+name_servers = ["8.8.8.8", "8.8.4.4"]
 if "DOH_SERVERS" in os.environ:
-    dohServers = os.environ["DOH_SERVERS"].split(",")
+    name_servers = os.environ["DOH_SERVERS"].split(",")
 
 
 def resolv_host(server):
     """ resolve {host} to an IP if its a host name """
     if validation.is_valid_ipv4(server):
         return server
-    if validation.is_valid_host(server):
-        return socket.gethostbyname(server)
-    return None
+    return socket.gethostbyname(server)
 
 
 class ResolvError(Exception):
@@ -49,9 +46,6 @@ class ResolvError(Exception):
 class Query:  # pylint: disable=too-few-public-methods
     """ build a DNS query & resolve it """
     def __init__(self, name, rdtype):
-        if not validation.is_valid_host(name):
-            raise ResolvError(f"Hostname '{name}' failed validation")
-
         self.name = name
         self.rdtype = rdtype
         self.with_dnssec = True
@@ -70,18 +64,16 @@ class Resolver:
     def __init__(self, qry):
         self.qryid = None
         self.reply = None
-        if not validation.is_valid_host(qry.name):
-            raise ResolvError(f"Hostname '{qry.name}' failed validation")
 
         if isinstance(qry.rdtype, int):
             rdtype = int(qry.rdtype)
         else:
-            rdtype = dns.rdatatype.from_text(qry.rdtype)
+            try:
+                rdtype = dns.rdatatype.from_text(qry.rdtype)
+            except dns.rdatatype.UnknownRdatatype:
+                raise ResolvError("Invalid RD type")
 
-        if hasattr(qry, "servers"):
-            self.servers = qry.servers
-        else:
-            self.servers = dohServers
+        self.servers = qry.servers if hasattr(qry, "servers") else name_servers
 
         for each_svr in qry.servers:
             if not validation.is_valid_ipv4(each_svr):
@@ -106,7 +98,6 @@ class Resolver:
             try:
                 sent_len = self.sock.sendto(self.question, (each_svr, 53))
                 ret = ret or (sent_len == len(self.question))
-            # pylint: disable=unused-variable,broad-except
             except Exception as err:
                 syslog(str(err))
 
@@ -126,7 +117,7 @@ class Resolver:
         return self.send_all()
 
     def match_id(self):
-        """ cehck the DNS quiery Id field matches what we asked """
+        """ check the DNS quiery Id field matches what we asked """
         return (self.qryid is not None and self.reply[0] == self.qryid[0]
                 and self.reply[1] == self.qryid[1])
 
@@ -147,50 +138,14 @@ class Resolver:
                     if binary_format:
                         return self.reply
 
-                    if (ret := self.decode_reply()) is None:
-                        return None
-
-                    ret["Responder"] = addr
                     self.sock.close()
-                    return ret
+                    return dns.message.from_wire(self.reply)
 
             self.expiry += int(self.expiry / 2) if self.expiry > 2 else 1
             self.tries += 1
 
         self.sock.close()
         return None
-
-    def decode_reply(self):
-        """ decode binary {message} in DNS format to dictionary in DoH fmt """
-        msg = dns.message.from_wire(self.reply)
-        if (msg.flags & DNS_FLAGS["QR"]) == 0:
-            return None  # REPLY flag not set
-
-        out = {}
-
-        for flag in DNS_FLAGS:
-            out[flag] = (msg.flags & DNS_FLAGS[flag]) != 0
-
-        out["Status"] = msg.rcode()
-
-        out["Question"] = [{
-            "name": rr.name.to_text(),
-            "type": rr.rdtype
-        } for rr in msg.question]
-
-        out["Answer"] = [{
-            "name": rr.name.to_text(),
-            "data": i.to_text(),
-            "type": rr.rdtype
-        } for rr in msg.answer for i in rr]
-
-        out["Authority"] = [{
-            "name": rr.name.to_text(),
-            "data": i.to_text(),
-            "type": rr.rdtype
-        } for rr in msg.authority for i in rr]
-
-        return out
 
 
 def main():
@@ -211,13 +166,14 @@ def main():
                         help="RR Type to query for")
     args = parser.parse_args()
 
-    if not validation.is_valid_host(args.name):
-        print(f"ERROR: '{args.name}' is an invalid host name")
-    else:
-        qry = Query(args.name, args.rdtype)
-        qry.servers = args.servers.split(",")
-        qry.do = True
-        print(json.dumps(qry.resolv(), indent=2))
+    qry = Query(args.name, args.rdtype)
+    qry.servers = args.servers.split(",")
+    qry.do = True
+    msg = qry.resolv()
+    print("RC:",msg.rcode(),msg.flags)
+    print("QR:",msg.question)
+    print("AN:",msg.answer)
+    print("AT:",msg.authority)
 
 
 if __name__ == "__main__":

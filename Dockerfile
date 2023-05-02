@@ -1,6 +1,6 @@
 FROM jamesstevens/gunicorn-flask
 
-COPY uwf/*.py /usr/local/uwf/
-RUN python3 -m compileall /usr/local/uwf
+COPY python/*.py /usr/local/python/
+RUN python3 -m compileall /usr/local/python
 
 CMD [ "/sbin/init" ]
