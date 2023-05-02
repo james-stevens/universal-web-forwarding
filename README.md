@@ -70,6 +70,14 @@ NOTE: becuase you can't have different addresses for different protocols, this m
 used for UWF.
 
 
+## Running your own UWF Node
+
+To run your own UWF node, simple run this container on a public IP Address, port 80.
+
+You can either build this container from its soruce code by running `./dkmk` in this directory, or use the
+container `jamesstevens/universal-web-forwarding` from `docker.com`.
+
+
 ## Suggestions for Different TLAs for different sites
 
 If everybody uses the same three letter prefix for each well known service provider, e.g. `twt` for Twitter, this could become a universal way to find
