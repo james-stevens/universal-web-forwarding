@@ -21,9 +21,9 @@ records to your domain
 - Now all `HTTP` requests for all hostname in your domain will go to the UWF node, so all you need
 to do now is start adding UWF records wherever you want them.
 
-For example, if your twitter account is `https://twitter.com/JohnDeo`, then add the record
+For example, if your twitter account is `https://twitter.com/JohnDeoTheThird`, then add the record
 
-	_http._tcp.twt IN URL 1 1 "https://twitter.com/JohnDeo"
+	_http._tcp.twt IN URL 1 1 "https://twitter.com/JohnDeoTheThird"
 
 If your DNS provider does not support `URL` record types, use a `TXT` record instead
 
