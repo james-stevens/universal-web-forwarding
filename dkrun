@@ -1,5 +1,10 @@
 #! /bin/sh
 
 docker run --read-only \
-	--env "DOH_SERVERS=8.8.8.8,1.1.1.1" \
-	-it -p 192.168.1.145:80:80 universal-web-forwarding
+	--env "NAME_SERVERS=192.168.8.33,192.168.8.43" \
+	--env "REST_API_DIR=/" \
+	--env "NO_ACCESS_LOGGING=Y" \
+	-v /opt/github/universal-web-forwarding/python:/opt/python \
+	-p 192.168.1.145:80:80 \
+	-p 127.0.0.1:80:80 \
+	-it universal-web-forwarding $*
