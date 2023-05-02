@@ -13,6 +13,8 @@ import dns.message
 import dns.rdatatype
 import random
 
+import validation
+
 DNS_MAX_RESP = 4096
 MAX_TRIES = 10
 
