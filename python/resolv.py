@@ -13,21 +13,12 @@ import dns.message
 import dns.rdatatype
 import random
 
-import validation
-
 DNS_MAX_RESP = 4096
 MAX_TRIES = 10
 
 id_list = [ (int(x/255),x%255) for x in range(1,65535) ]
 random.shuffle(id_list)
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-
-def resolv_host(server):
-    """ resolve {host} to an IP if its a host name """
-    if validation.is_valid_ipv4(server):
-        return server
-    return socket.gethostbyname(server)
 
 
 class ResolvError(Exception):
