@@ -72,7 +72,7 @@ used for UWF.
 
 ## Suggestions for Different TLAs for different sites
 
-If everybody uses the same three letter prefix for each well known service providers, e.g. `twt` for Twitter, this can become a universal way to find
+If everybody uses the same three letter prefix for each well known service provider, e.g. `twt` for Twitter, this could become a universal way to find
 somebody's social media account, once you know their personal domain name.
 
 Here's some suggestions
