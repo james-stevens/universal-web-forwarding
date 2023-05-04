@@ -4,7 +4,7 @@ docker run \
 	--env "NAME_SERVERS=192.168.8.33,192.168.8.43" \
 	--env "REST_API_DIR=/" \
 	--env "NO_ACCESS_LOGGING=Y" \
-	-v /opt/github/universal-web-forwarding/python:/opt/python \
+	-v /opt/github/universal-web-redirect/python:/opt/python \
 	-p 192.168.1.145:80:80 \
 	-p 127.0.0.1:80:80 \
-	-it universal-web-forwarding $*
+	-it universal-web-redirect $*

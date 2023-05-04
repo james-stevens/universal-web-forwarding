@@ -1,6 +1,6 @@
 #! /bin/sh
 
-cd /opt/github/universal-web-forwarding
+cd /opt/github/universal-web-redirect
 if test "$1"
 	then
 		find python -name '*.pyc' -delete
