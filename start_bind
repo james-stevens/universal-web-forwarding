@@ -1,0 +1,25 @@
+#! /bin/sh
+##########################################################################
+#    (c) Copyright 2021-2023 JRCS Ltd - All Rights Reserved              #
+##########################################################################
+
+{
+echo '    forwarders {'
+for svr in ${NAME_SERVERS}
+	do
+		echo "        ${svr};"
+	done
+echo "    };"
+} > /opt/named/etc/fwd.inc
+
+extra="-4"
+if test "${WITH_BIND_V6}" = "Y"; then extra=""; fi
+
+if ! named-checkconf -t /opt/named
+	then
+		echo "======= ERROR ========"
+		sleep 5
+		exit 1
+	fi
+
+exec /usr/sbin/named -f ${extra} -u named -t /opt/named

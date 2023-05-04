@@ -1,6 +1,6 @@
 #! /bin/sh
 
-docker run --read-only \
+docker run \
 	--env "NAME_SERVERS=192.168.8.33,192.168.8.43" \
 	--env "REST_API_DIR=/" \
 	--env "NO_ACCESS_LOGGING=Y" \
