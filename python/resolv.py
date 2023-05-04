@@ -133,7 +133,7 @@ def main():
         description='This is a wrapper to test the resolver code')
     parser.add_argument("-s",
                         "--servers",
-                        default="8.8.8.8,1.1.1.1",
+                        default="8.8.8.8 1.1.1.1",
                         help="Resolvers to query")
     parser.add_argument("-n",
                         "--name",
@@ -149,7 +149,7 @@ def main():
     qry.name = args.name
     qry.rdtype = args.rdtype
     qry.sock = sock
-    qry.servers = args.servers.split(",")
+    qry.servers = args.servers.split(" ")
     msg = qry.resolv()
     print("RC:",msg.rcode(),msg.flags)
     print("QR:",msg.question)

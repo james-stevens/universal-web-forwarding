@@ -3,6 +3,15 @@
 #    (c) Copyright 2021-2023 JRCS Ltd - All Rights Reserved              #
 ##########################################################################
 
+base="/ram/named"
+
+mkdir -p ${base} ${base}/etc
+mkdir -p ${base}/etc/bind ${base}/zones ${base}/var ${base}/var/run
+cp -a /etc/bind/rndc.key ${base}/etc/bind
+chown -R named: ${base}/zones ${base}/var
+cp /usr/local/etc/named.conf ${base}/etc/bind
+
+
 {
 echo '    forwarders {'
 for svr in ${NAME_SERVERS}
@@ -10,16 +19,16 @@ for svr in ${NAME_SERVERS}
 		echo "        ${svr};"
 	done
 echo "    };"
-} > /opt/named/etc/fwd.inc
+} > ${base}/etc/fwd.inc
 
 extra="-4"
 if test "${WITH_BIND_V6}" = "Y"; then extra=""; fi
 
-if ! named-checkconf -t /opt/named
+if ! named-checkconf -t ${base}
 	then
 		echo "======= ERROR ========"
 		sleep 5
 		exit 1
 	fi
 
-exec /usr/sbin/named -f ${extra} -u named -t /opt/named
+exec /usr/sbin/named -f ${extra} -u named -t ${base}

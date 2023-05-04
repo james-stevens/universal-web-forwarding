@@ -21,7 +21,7 @@ def abort(err_no, message):
 
 application = flask.Flask("Universal Web Redirect")
 qry = resolv.Query()
-qry.servers = os.environ["NAME_SERVERS"].split(",") if "NAME_SERVERS" in os.environ else ["8.8.8.8","8.8.4.4"]
+qry.servers = os.environ["NAME_SERVERS"].split(" ") if "NAME_SERVERS" in os.environ else ["8.8.8.8","8.8.4.4"]
 qry.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
