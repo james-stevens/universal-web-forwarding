@@ -80,6 +80,9 @@ For example, HTTPS will still resolve to the UWR's IP Address, but will not work
 
 5. UWR **will** support non-ICANN domain naming system, but ONLY if **BOTH** the client and UWR node(s) can resolve the non-ICANN domain names.
 
+6. If a hostname resolves to the IP of a UWR node, but the node can't find an exact match `URI` or `TXT` record for that hostname,
+it will then look for a record at the hostname `_any.<domain>`. This is so users can have a default matching URL when using the wild card hostname. (not yet implemented)
+
 
 ## Running your own UWR Node
 
