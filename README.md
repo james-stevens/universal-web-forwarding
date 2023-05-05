@@ -53,9 +53,7 @@ If you only want to use UWR for certain names, you can choose to point only thos
 
 With only this address record, instead of the address pair above, UWR would only be active on the hostname `twt`.
 
-For fail-over / load-balancing, you can point to multiple UWR nodes by specifying multiple IP Addresses
-
-For example
+For fail-over / load-balancing, you can point to multiple UWR nodes by specifying multiple IP Addresses. For example
 
 	@ IN A 10.11.12.111
 	@ IN A 10.11.12.222
