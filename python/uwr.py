@@ -14,7 +14,7 @@ RR_TXT = rdatatype.from_text("TXT")
 
 
 def abort(err_no, message):
-    return flask.make_response(message, err_no)
+    return flask.make_response(message+"\n", err_no)
 
 
 application = flask.Flask("Universal Web Redirect")
@@ -75,7 +75,7 @@ def redirect_user(request, text):
     ttl = max([rr.ttl for rr in msg.answer])
 
     response = flask.redirect(send_them_to, code=redirect_code)
-    response.headers = {'Cache-Control': f"max-age={ttl}"}
+    response.headers['Cache-Control'] = f"max-age={ttl}"
     return response
 
 
