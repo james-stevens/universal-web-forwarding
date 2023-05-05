@@ -84,6 +84,8 @@ For example, HTTPS will still resolve to the UWR's IP Address, but will not work
 6. If a hostname resolves to the IP of a UWR node, but the node can't find an exact match `URI` or `TXT` record for that hostname,
 it will then look for a record at the hostname `_any.<domain>`. This is so users can have a default matching URL when using the wild card hostname. (not yet implemented)
 
+7. Any remaining TTL of the DNS record is sent to the browser as `Cache-Control: max-age=<TTL>`, telling the browser the maximum time it can hold that redirect in cache.
+
 
 ## Running your own UWR Node
 
@@ -91,6 +93,13 @@ To run your own UWR node, simple run this container on a public IP Address, port
 
 You can either build this container from its soruce code by running `./dkmk` in this directory, or use the
 container `jamesstevens/universal-web-redirect` from `docker.com`.
+
+When you run the container the environment variable `REST_API_DIR` **MUST** be set to `/` and the environment variable `NAME_SERVERS`
+must be set to a space separated list of the resolving name servers you wish the container to use.
+
+NOTE: for improved perfomance, the container internally runs a copy of ISC's `bind` DNS Resolver, but it is configured to **ONLY**
+get answers from the resolving name servers you specify. However, it will cache answers and do load-balancing & fail-over if you specify
+multiple resolving name servers.
 
 
 ## Suggestions for Different TLAs for different sites
