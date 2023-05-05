@@ -86,6 +86,13 @@ it will then look for a record at the hostname `_any.<domain>`. This is so users
 
 7. Any remaining TTL of the DNS record is sent to the browser as `Cache-Control: max-age=<TTL>`, telling the browser the maximum time it can hold that redirect in cache.
 
+8. The default behaviour is to forward the user to only the URL supplied, but if you wish to copy the path of the source URL onto the end of the
+destination URL, you can specify this by adding the suffix `/$$` to the end of the destination URL. For exmaple
+
+	_http._tcp IN URL 1 1 "https://www.our-web-site.com/$$"
+
+With this in place, the URL `http://exmaple.com/user/login` will be rediected to `https://www.our-web-site.com/user/login`
+
 
 ## Running your own UWR Node
 
