@@ -47,9 +47,7 @@ If these UWR records were set on the domain `example.com`, then the following we
 
 So, when any user clicks the URL `exmaple.com` they will be automatically redirected to `https://www.our-web-site.com/`.
 
-If you only want to use UWR for certain names, you can choose to point only those names to the UWR node(s).
-
-For exmaple
+If you only want to use UWR for certain names, you can choose to point only those names to the UWR node(s). For exmaple
 
 	twt IN A 10.11.12.13
 
