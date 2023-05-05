@@ -24,21 +24,21 @@ If you have an otherwise unused domain, do the following
 2. Now all `HTTP` requests for all hostname in your domain will go to the UWR node, so all you need
 to do now is start adding UWR records wherever you want them.
 
-For example, if your twitter account is `https://twitter.com/JohnDeoTheThird`, then add the record
+	For example, if your twitter account is `https://twitter.com/JohnDeoTheThird`, then add the record
 
-	_http._tcp.twt IN URL 1 1 "https://twitter.com/JohnDeoTheThird"
+		_http._tcp.twt IN URL 1 1 "https://twitter.com/JohnDeoTheThird"
 
-If your DNS provider does not support `URL` record types, use a `TXT` record instead
+	If your DNS provider does not support `URL` record types, use a `TXT` record instead
 
-	_http._tcp.twt IN TXT "https://twitter.com/JohnDeo"
+		_http._tcp.twt IN TXT "https://twitter.com/JohnDeo"
 
-To set a UWR for the domain itself, set the following
+	To set a UWR for the domain itself, set the following
 
-	_http._tcp IN URL 1 1 "https://www.our-web-site.com/"
+		_http._tcp IN URL 1 1 "https://www.our-web-site.com/"
 
-or
+	or
 
-	_http._tcp IN TXT "https://www.our-web-site.com/"
+		_http._tcp IN TXT "https://www.our-web-site.com/"
 
 If these UWR records were set on the domain `example.com`, then the following web redirections would work
 
