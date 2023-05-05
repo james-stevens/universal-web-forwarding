@@ -15,11 +15,11 @@ If you have an otherwise unused domain, do the following
 
 1. Set your domain to point to one or more UWR nodes (public servers running this software)
 
-	For example, if there is a public UWR node running at `10.11.12.13` (there won't be!), add the following
+	For example, if there is a public UWR node running at `10.11.12.111` (there won't be!), add the following
 	records to your domain
 
-		@ IN A 10.11.12.13
-		* IN A 10.11.12.13
+		@ IN A 10.11.12.111
+		* IN A 10.11.12.111
 
 2. Now all `HTTP` requests for all hostname in your domain will go to the UWR node, so all you need
 to do now is start adding UWR records wherever you want them.
@@ -49,7 +49,7 @@ So, when any user clicks the URL `exmaple.com` they will be automatically redire
 
 If you only want to use UWR for certain names, you can choose to point only those names to the UWR node(s). For exmaple
 
-	twt IN A 10.11.12.13
+	twt IN A 10.11.12.111
 
 With only this address record, instead of the address pair above, UWR would only be active on the hostname `twt`.
 
@@ -57,15 +57,15 @@ For fail-over / load-balancing, you can point to multiple UWR nodes by specifyin
 
 For example
 
-	@ IN A 10.11.12.13
-	@ IN A 10.11.12.23
-	* IN A 10.11.12.13
-	* IN A 10.11.12.23
+	@ IN A 10.11.12.111
+	@ IN A 10.11.12.222
+	* IN A 10.11.12.111
+	* IN A 10.11.12.222
 
 or
 
-	twt IN A 10.11.12.13
-	twt IN A 10.11.12.23
+	twt IN A 10.11.12.111
+	twt IN A 10.11.12.222
 
 
 ## NOTES
