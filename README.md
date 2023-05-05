@@ -6,19 +6,22 @@ As this RR seems to have been otherwise unsed to date (2023-05-02), many DNS mai
 the ability to for users to specify `URI` RR types. For this reason this server will fall back to looking for `TXT` records
 which have almost universal support.
 
+Performance will be slightly better if you use `URI` records, if you can, becuase it looks for these first.
+
+
 ## Setting up UWR on your domain
 
 If you have an otherwise unused domain, do the following
 
-- Set your domain to point to one or more UWR nodes (public servers running this software)
+1. Set your domain to point to one or more UWR nodes (public servers running this software)
 
-For example, if there is a public UWR node running at `10.11.12.13` (there won't be!), add the following
-records to your domain
+	For example, if there is a public UWR node running at `10.11.12.13` (there won't be!), add the following
+	records to your domain
 
-	@ IN A 10.11.12.13
-	* IN A 10.11.12.13
+		@ IN A 10.11.12.13
+		* IN A 10.11.12.13
 
-- Now all `HTTP` requests for all hostname in your domain will go to the UWR node, so all you need
+2. Now all `HTTP` requests for all hostname in your domain will go to the UWR node, so all you need
 to do now is start adding UWR records wherever you want them.
 
 For example, if your twitter account is `https://twitter.com/JohnDeoTheThird`, then add the record
