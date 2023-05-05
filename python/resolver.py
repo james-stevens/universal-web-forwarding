@@ -8,7 +8,6 @@ import socket
 import select
 import argparse
 import dns
-import dns.name
 import dns.message
 import dns.rdatatype
 import random
@@ -18,66 +17,54 @@ import validation
 DNS_MAX_RESP = 4096
 MAX_TRIES = 10
 
-id_list = [ (int(x/255),x%255) for x in range(1,65535) ]
-random.shuffle(id_list)
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-
-class ResolvError(Exception):
+class ResolverError(Exception):
     """ custom error """
 
 
 class Query:  # pylint: disable=too-few-public-methods
     """ build a DNS query & resolve it """
-    def __init__(self):
-        self.name = None
-        self.rdtype = None
-        self.servers = ["8.8.8.8", "1.1.1.1"]
-        self.sock = None
+    def __init__(self, servers):
         self.next_id_item = 0
 
-    def resolv(self):
-        """ resolve the query we hold """
-        res = Resolver(self)
-        res.sock = self.sock
-        return res.recv()
+        self.id_list = [(int(x / 255), x % 255) for x in range(1, 65535)]
+        random.shuffle(self.id_list)
 
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        if self.sock is None:
+            raise ResolverError("Failed to open UDP client socket")
 
-class Resolver:
-    """ resolve a DNS <Query> """
-    def __init__(self, qry):
+        for each_svr in servers:
+            if not validation.is_valid_ipv4(each_svr):
+                raise ResolverError("Invalid IP v4 Address for a Server")
+        self.servers = servers
+
+    def query(self, name, rdtype):
+        self.name = name
+        self.rdtype = None
         self.qry_id = None
         self.reply = None
-        self.sock = None
-        self.qry = qry
-
-        if isinstance(self.qry.rdtype, int):
-            self.qry.rdtype = int(self.qry.rdtype)
-        else:
-            try:
-                self.qry.rdtype = dns.rdatatype.from_text(self.qry.rdtype)
-            except dns.rdatatype.UnknownRdatatype:
-                raise ResolvError("Invalid RD type")
-
-
-        for each_svr in self.qry.servers:
-            if not validation.is_valid_ipv4(each_svr):
-                raise ResolvError("Invalid IP v4 Address for a Server")
-
-        if self.sock is None:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        if self.sock is None:
-            raise ResolvError("Failed to open UDP client socket")
-
         self.expiry = 1
         self.tries = 0
-        self.name = qry.name
+
+        if isinstance(rdtype, int):
+            self.rdtype = rdtype
+        else:
+            try:
+                self.rdtype = dns.rdatatype.from_text(rdtype)
+            except dns.rdatatype.UnknownRdatatype:
+                return False
+
+        msg = dns.message.make_query(self.name, self.rdtype)
+        self.question = bytearray(msg.to_wire())
+
+        return True
 
     def send_all(self):
         """ send the query to all servers """
         ret = False
-        for each_svr in self.qry.servers:
+        self.drain()
+        for each_svr in self.servers:
             try:
                 sent_len = self.sock.sendto(self.question, (each_svr, 53))
                 ret = ret or (sent_len == len(self.question))
@@ -91,10 +78,14 @@ class Resolver:
         if self.question is None:
             return None
 
-        self.qry_id = id_list[self.qry.next_id_item]
-        self.qry.next_id_item = self.qry.next_id_item+1 if self.qry.next_id_item < len(id_list) else 0
+        self.qry_id = self.id_list[self.next_id_item]
+        self.next_id_item = self.next_id_item + 1
+        if self.next_id_item >= len(self.id_list):
+            self.next_id_item = 0
+
         self.question[0] = self.qry_id[0]
         self.question[1] = self.qry_id[1]
+
         return self.send_all()
 
     def match_id(self):
@@ -102,11 +93,8 @@ class Resolver:
         return (self.qry_id is not None and self.reply[0] == self.qry_id[0]
                 and self.reply[1] == self.qry_id[1])
 
-    def recv(self, binary_format=False):
+    def resolv(self, binary_format=False):
         """ look for dns UDP response and read it """
-
-        msg = dns.message.make_query(self.qry.name, self.qry.rdtype)
-        self.question = bytearray(msg.to_wire())
 
         while self.tries < MAX_TRIES:
             if not self.send():
@@ -126,6 +114,17 @@ class Resolver:
 
         return None
 
+    def drain(self):
+        while True:
+            rlist, _, _ = select.select([self.sock], [], [], 0)
+            if len(rlist) <= 0:
+                return
+            _, (_, _) = self.sock.recvfrom(DNS_MAX_RESP)
+
+    def close(self):
+        self.drain()
+        self.sock.close()
+
 
 def main():
     """ main """
@@ -141,29 +140,22 @@ def main():
                         help="Name to query for")
     parser.add_argument("-t",
                         "--rdtype",
-                        default="txt",
+                        default="soa",
                         help="RR Type to query for")
     args = parser.parse_args()
 
-    qry = Query()
-    qry.name = args.name
-    qry.rdtype = args.rdtype
-    qry.sock = sock
-    qry.servers = args.servers.split(" ")
+    qry = Query(args.servers.split(" "))
+    qry.query(args.name, args.rdtype)
     msg = qry.resolv()
-    print("RC:",msg.rcode(),msg.flags)
-    print("QR:",msg.question)
-    print("AN:",msg.answer)
-    print("AT:",msg.authority)
- 
-    print("")
-    qry.name="_http._tcp.twt.jrcs.net"
-    msg = qry.resolv()
-    print("RC:",msg.rcode(),msg.flags)
-    print("QR:",msg.question)
-    print("AN:",msg.answer)
-    print("AT:",msg.authority)
-    sock.close()
+    print("RC:", msg.rcode(), msg.flags)
+    print("QR:", msg.question)
+    print("AN:", msg.answer)
+    for rr in msg.answer:
+        for i in rr:
+            print(f"    >{i.to_text()}<")
+    print("AT:", msg.authority)
+
+    qry.close()
 
 
 if __name__ == "__main__":
