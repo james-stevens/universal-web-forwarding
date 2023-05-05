@@ -71,12 +71,13 @@ or
 
 1. For records of type `URI` the fields `priority` and `weight` are not (yet) implemented.
 
-2. Where only one URL is given an HTTP 301 Redirect is given. Where more than one URL is given one URL is picked at random and an HTTP 302 Redirect is given.
+2. Where only one URL is given an `HTTP 301 Redirect` is given.
+Where more than one URL is given one URL is picked at random and an `HTTP 302 Redirect` is given.
 
-3. Becuase you can't have different IP addresses for different protocols, pointing a hostname to a UWR node means the hostname can **only** be used for UWR.
+3. Becuase you can't have different IP addresses for different protocols, pointing a hostname to a UWR node means that hostname can **only** be used for UWR.
 For example, HTTPS will still resolve to the UWR's IP Address, but will not work.
 
-4. UWR does **NOT** support HTTPS, for lots of reasons. In fact it **ONLY** support HTTP, nothing else.
+4. UWR does **NOT** support HTTPS, for lots of reasons. In fact UWR **ONLY** supports HTTP, nothing else.
 
 5. UWR **will** support non-ICANN domain naming system, but ONLY if **BOTH** the client and UWR node(s) can resolve the non-ICANN domain names.
 
