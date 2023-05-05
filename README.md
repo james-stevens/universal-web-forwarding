@@ -1,6 +1,6 @@
 # Universal Web Redirect, via DNS
 
-This server provides a unversal HTTP redirection service based on the (`URI` DNS Recource Record)[https://en.wikipedia.org/wiki/URI_record].
+This server provides a unversal HTTP redirection service based on the [`URI` DNS Recource Record](https://en.wikipedia.org/wiki/URI_record).
 
 As this RR seems to have been otherwise unsed to date (2023-05-02), many DNS maintenance systems do not support
 the ability to for users to specify `URI` RR types. For this reason this server will fall back to looking for `TXT` records
