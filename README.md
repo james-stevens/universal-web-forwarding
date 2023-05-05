@@ -1,6 +1,6 @@
 # Universal Web Redirect, via DNS
 
-This server provides a unversal HTTP redirection service based on the `URI` DNS Recource Record.
+This server provides a unversal HTTP redirection service based on the (`URI` DNS Recource Record)[https://en.wikipedia.org/wiki/URI_record].
 
 As this RR seems to have been otherwise unsed to date (2023-05-02), many DNS maintenance systems do not support
 the ability to for users to specify `URI` RR types. For this reason this server will fall back to looking for `TXT` records
@@ -66,8 +66,19 @@ or
 	twt IN A 10.11.12.13
 	twt IN A 10.11.12.23
 
-NOTE: becuase you can't have different addresses for different protocols, this means the name `twt` can **only** be
-used for UWR.
+
+## NOTES
+
+1. For records of type `URI` the fields `priority` and `weight` are not (yet) implemented.
+
+2. Where only one URL is given an HTTP 301 Redirect is given. Where more than one URL is given one URL is picked at random and an HTTP 302 Redirect is given.
+
+3. Becuase you can't have different IP addresses for different protocols, pointing a hostname to a UWR node means the hostname can **only** be used for UWR.
+For example, HTTPS will still resolve to the UWR's IP Address, but will not work.
+
+4. UWR does **NOT** support HTTPS, for lots of reasons. In fact it **ONLY** support HTTP, nothing else.
+
+5. UWR **will** support non-ICANN domain naming system, but ONLY if **BOTH** the client and UWR node(s) can resolve the non-ICANN domain names.
 
 
 ## Running your own UWR Node
