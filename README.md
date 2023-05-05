@@ -45,7 +45,7 @@ If these UWR records were set on the domain `example.com`, then the following we
 	http://example.com/ -> https://www.our-web-site.com/
 	http://twt.exmaple.com/ -> https://twitter.com/JohnDeoTheThird
 
-So, when any usser click the URL `exmaple.com` they will be sent to `https://www.our-web-site.com/`.
+So, when any user click the URL `exmaple.com` they will be sent to `https://www.our-web-site.com/`.
 
 If you only want to use UWR for certain names, you can chooses to point only those names to the UWR node(s).
 
