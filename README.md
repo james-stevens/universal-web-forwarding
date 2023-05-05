@@ -91,7 +91,13 @@ destination URL, you can specify this by adding the suffix `/$$` to the end of t
 
 			_http._tcp IN URL 1 1 "https://www.our-web-site.com/$$"
 
-With this in place, the URL `http://exmaple.com/user/login` will be rediected to `https://www.our-web-site.com/user/login`
+	With this in place, the URL
+
+			http://exmaple.com/user/login
+
+	will be rediected to
+
+			https://www.our-web-site.com/user/login
 
 
 ## Running your own UWR Node
