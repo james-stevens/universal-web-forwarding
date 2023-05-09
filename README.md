@@ -43,11 +43,11 @@ to do now is start adding UWR records wherever you want them.
 If these UWR records were set on the domain `example.com`, then the following web redirections would work
 
 	http://example.com/ -> https://www.our-web-site.com/
-	http://twt.exmaple.com/ -> https://twitter.com/JohnDeoTheThird
+	http://twt.example.com/ -> https://twitter.com/JohnDeoTheThird
 
-So, when any user clicks the URL `exmaple.com` they will be automatically redirected to `https://www.our-web-site.com/`.
+So, when any user clicks the URL `example.com` they will be automatically redirected to `https://www.our-web-site.com/`.
 
-If you only want to use UWR for certain names, you can choose to point only those names to the UWR node(s). For exmaple
+If you only want to use UWR for certain names, you can choose to point only those names to the UWR node(s). For example
 
 	twt IN A 10.11.12.111
 
@@ -66,6 +66,34 @@ or
 	twt IN A 10.11.12.222
 
 
+## Using CNAME records
+
+Assuming you UWR service provider have given a name to their UWR service, you can also set a host name as a UWR name by using a `CNAME` record. For example,
+
+	twt IN CNAME uwr.service-provider.net.
+
+or
+
+	* IN CNAME uwr.service-provider.net.
+
+
+## CNAME vs A records
+
+To make a specific host name a UWR name, you can use either a `CNAME` or `A` record. Both work slightly differently, so 
+have slightly different pros & cons. Both work fine with individual host names or the wild card name, although it should be noted
+that setting a `CNAME` on the wildcard host name may trigger unexpected results.
+
+### CNAME - Pros
+- Easier to understand & remember
+- The UWR node service provider can move it to a new IP Address with no problems
+- The UWR node service provider can implement geo-targetted load-balancing
+
+### CNAME - Cons
+- You *CAN NOT* put a `CNAME` record on the domain itself, so to use the domain itself as a UWR name, you must use `A` records
+- A `CNAME` can only point to one UWR node service provider, where as you can use multiple `A` records to point to multiple UWR node service providers
+
+
+
 ## NOTES
 
 1. For records of type `URI` the fields `priority` and `weight` are not (yet) implemented.
@@ -81,18 +109,18 @@ For example, HTTPS will still resolve to the UWR's IP Address, but will not work
 5. UWR **will** support non-ICANN domain naming system, but ONLY if **BOTH** the user's browser and UWR node(s) can resolve the non-ICANN domain names.
 
 6. If a hostname resolves to the IP of a UWR node, but the node can't find an exact match `URI` or `TXT` record for that hostname,
-it will then look for a record at the hostname `_any.<domain>`. This is so users can have a default matching URL when using the wild card hostname. (not yet implemented)
+it will then look for a record at the hostname `_any.<domain>`. This is so users can have a default matching URL when using the wild card hostname.
 
 7. Any remaining TTL of the DNS record is sent to the browser as `Cache-Control: max-age=<TTL>`, telling the browser the maximum time it can hold that redirect in cache.
 
 8. The default behaviour is to forward the user to only the URL supplied, but if you wish to copy the path of the source URL onto the end of the
-destination URL, you can specify this by adding the suffix `/$$` to the end of the destination URL. For exmaple
+destination URL, you can specify this by adding the suffix `/$$` to the end of the destination URL. For example
 
 			_http._tcp IN URL 1 1 "https://www.our-web-site.com/$$"
 
 	With this in place, the URL
 
-			http://exmaple.com/user/login
+			http://example.com/user/login
 
 	will be rediected to
 
@@ -112,6 +140,7 @@ must be set to a space separated list of the resolving name servers you wish the
 NOTE: for improved perfomance, the container internally runs a copy of ISC's `bind` DNS Resolver, but it is configured to **ONLY**
 get answers from the resolving name servers you specify. However, it will cache answers and do load-balancing & fail-over if you specify
 multiple resolving name servers.
+
 
 
 ## Suggestions for Different TLAs for different sites

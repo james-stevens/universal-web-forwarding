@@ -1,4 +1,4 @@
-FROM gunicorn-flask
+FROM jamesstevens/gunicorn-flask
 
 RUN apk update
 RUN apk upgrade
