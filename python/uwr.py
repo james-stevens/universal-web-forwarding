@@ -14,22 +14,62 @@ RR_TXT = rdatatype.from_text("TXT")
 
 
 def abort(err_no, message):
-    return flask.make_response(message+"\n", err_no)
+    return flask.make_response(message + "\n", err_no)
 
 
 application = flask.Flask("Universal Web Redirect")
-qry = resolver.Query(os.environ["PYTHON_NAME_SERVERS"].split(" ")
-                     if "PYTHON_NAME_SERVERS" in os.environ else ["127.0.0.1"])
+qry = resolver.Resolver(os.environ["PYTHON_NAME_SERVERS"].split(" ") if
+                        "PYTHON_NAME_SERVERS" in os.environ else ["127.0.0.1"])
 
 
 def strip_uri(uri):
-    if (pos := uri.find('"')) >= 0:
-        return uri[pos + 1:].strip('"')
-    return uri.strip('"')
+    pos = uri.find('"')
+    out_uri = uri[pos + 1:].strip('"') if pos >= 0 else uri.strip('"')
+    if out_uri[:7].lower() != "http://" and out_uri[:8].lower() != "https://":
+        return "http://" + out_uri
+    return out_uri
 
 
 def get_uris(msg):
-    return [strip_uri(i.to_text()) for rr in msg.answer for i in rr]
+    return [
+        uri for rr in msg.answer for i in rr
+        if (uri := strip_uri(i.to_text())) is not None
+    ]
+
+
+def get_ttl(msg):
+	return max([rr.ttl for rr in msg.answer])
+
+def get_domain(msg):
+    for rr in msg.authority:
+        for i in rr:
+            if rr.rdtype == rdatatype.SOA:
+                return rr.name.to_text()
+    return None
+
+def has_rr_type(msg_section,rdtype):
+    return any(rr.rdtype == rdtype for rr in msg_section for i in rr)
+
+def get_uri_records(host):
+    msg = qry.resolv("_http._tcp." + host, RR_URI)
+
+    if msg.rcode() == 3:
+        if (domain := get_domain(msg)) is None:
+            return None, None
+        host = "_any."+domain
+        msg = qry.resolv("_http._tcp." + host, RR_URI)
+
+    if msg.rcode() != 0:
+        return None, None
+
+    if has_rr_type(msg.answer,RR_URI):
+        return get_ttl(msg), get_uris(msg)
+
+    msg = qry.resolv("_http._tcp." + host, RR_TXT)
+    if msg.rcode() == 0 and has_rr_type(msg.answer,RR_TXT):
+        return get_ttl(msg), get_uris(msg)
+
+    return None, None
 
 
 def redirect_user(request, text):
@@ -44,20 +84,12 @@ def redirect_user(request, text):
     if host.find(":") > 0:
         host = host.split(":")[0]
 
-    uris = None
-    qry.query("_http._tcp." + host, RR_URI)
-    msg = qry.resolv()
-    if msg.rcode() == 0:
-        if len(msg.answer) > 0:
-            uris = get_uris(msg)
-        else:
-            qry.query("_http._tcp." + host, RR_TXT)
-            msg = qry.resolv()
-            if msg.rcode() == 0 and len(msg.answer) > 0:
-                uris = get_uris(msg)
-
+    ttl, uris = get_uri_records(host)
     if uris is None or len(uris) <= 0:
-        return abort(499, f"No URI or TXT record found for host '{host}'")
+        return abort(
+            490,
+            ("<html><body><h1>Universal Web Forwarding Error</h1>" +
+             f"No URI or TXT record found for host '{host}'</body></html>"))
 
     redirect_code = 301
     if len(uris) > 1:
@@ -72,7 +104,6 @@ def redirect_user(request, text):
             send_them_to = send_them_to + "?" + request.query_string.decode(
                 "utf-8")
 
-    ttl = max([rr.ttl for rr in msg.answer])
 
     response = flask.redirect(send_them_to, code=redirect_code)
     response.headers['Cache-Control'] = f"max-age={ttl}"

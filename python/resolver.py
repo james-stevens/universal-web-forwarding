@@ -22,7 +22,7 @@ class ResolverError(Exception):
     """ custom error """
 
 
-class Query:  # pylint: disable=too-few-public-methods
+class Resolver:  # pylint: disable=too-few-public-methods
     """ build a DNS query & resolve it """
     def __init__(self, servers):
         self.next_id_item = 0
@@ -39,26 +39,21 @@ class Query:  # pylint: disable=too-few-public-methods
                 raise ResolverError("Invalid IP v4 Address for a Server")
         self.servers = servers
 
-    def query(self, name, rdtype):
-        self.name = name
-        self.rdtype = None
+    def resolv(self, name, rdtype):
         self.qry_id = None
-        self.reply = None
         self.expiry = 1
         self.tries = 0
 
-        if isinstance(rdtype, int):
-            self.rdtype = rdtype
-        else:
+        if isinstance(rdtype, str):
             try:
-                self.rdtype = dns.rdatatype.from_text(rdtype)
+                rdtype = dns.rdatatype.from_text(rdtype)
             except dns.rdatatype.UnknownRdatatype:
                 return False
 
-        msg = dns.message.make_query(self.name, self.rdtype)
+        msg = dns.message.make_query(name, rdtype)
         self.question = bytearray(msg.to_wire())
 
-        return True
+        return self.run_resolver()
 
     def send_all(self):
         """ send the query to all servers """
@@ -88,12 +83,12 @@ class Query:  # pylint: disable=too-few-public-methods
 
         return self.send_all()
 
-    def match_id(self):
+    def match_id(self, reply):
         """ check the DNS quiery Id field matches what we asked """
-        return (self.qry_id is not None and self.reply[0] == self.qry_id[0]
-                and self.reply[1] == self.qry_id[1])
+        return (self.qry_id is not None and reply[0] == self.qry_id[0]
+                and reply[1] == self.qry_id[1])
 
-    def resolv(self, binary_format=False):
+    def run_resolver(self):
         """ look for dns UDP response and read it """
 
         while self.tries < MAX_TRIES:
@@ -105,9 +100,9 @@ class Query:  # pylint: disable=too-few-public-methods
                 if len(rlist) <= 0:
                     break
 
-                self.reply, (addr, _) = self.sock.recvfrom(DNS_MAX_RESP)
-                if self.match_id():
-                    return dns.message.from_wire(self.reply)
+                reply, (addr, _) = self.sock.recvfrom(DNS_MAX_RESP)
+                if self.match_id(reply):
+                    return dns.message.from_wire(reply)
 
             self.expiry += int(self.expiry / 2) if self.expiry > 2 else 1
             self.tries += 1
@@ -144,9 +139,8 @@ def main():
                         help="RR Type to query for")
     args = parser.parse_args()
 
-    qry = Query(args.servers.split(" "))
-    qry.query(args.name, args.rdtype)
-    msg = qry.resolv()
+    qry = Resolver(args.servers.split(" "))
+    msg = qry.resolv(args.name, args.rdtype)
     print("RC:", msg.rcode(), msg.flags)
     print("QR:", msg.question)
     print("AN:", msg.answer)
